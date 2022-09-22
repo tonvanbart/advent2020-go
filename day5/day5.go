@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -15,12 +16,14 @@ func main() {
 		log.Fatal(err)
 	}
 	lines := strings.Split(string(input), "\n")
+	allids := make([]int, len(lines), len(lines))
 	maxid := 0
 	maxrow := 0
 	maxcol := 0
 	maxline := ""
-	for _, line := range lines {
+	for i, line := range lines {
 		row, col, id := convert(line)
+		allids[i] = id
 		if id > maxid {
 			maxline = line
 			maxid = id
@@ -29,6 +32,12 @@ func main() {
 		}
 	}
 	fmt.Printf("Maximum seatid is %d at row %d and col %d for input %s\n", maxid, maxrow, maxcol, maxline)
+	sort.Ints(allids)
+	for i := 0; i < len(allids)-1; i++ {
+		if allids[i] == allids[i+1]-2 {
+			fmt.Printf("The missing id is %d \n", allids[i]+1)
+		}
+	}
 }
 
 // take a boarding pass string and return row, column and seat id
