@@ -48,7 +48,7 @@ func main() {
 // return a map that is the intersection of the two argument maps.
 func intersect(a map[rune]bool, b map[rune]bool) map[rune]bool {
 	result := make(map[rune]bool)
-	for key, _ := range a {
+	for key := range a {
 		_, exist := b[key]
 		if exist {
 			result[key] = true
