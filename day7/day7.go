@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -16,32 +17,41 @@ func main() {
 	rulesin := strings.Split(string(input), "\n")
 	fmt.Printf("nr of rules %d\n", len(rulesin))
 
-	rules := make(map[string]map[string]bool)
-	re, err := regexp.Compile(`(\w+ \w+ bag)`)
+	rules := make(map[string]map[string]int)
+	re, err := regexp.Compile(`(\d*)( \w+ \w+ bag)`)
 	if err != nil {
 		log.Fatal(err)
 	}
+	keyexp, err := regexp.Compile(`^(\w+ \w+ bag)`)
 	for _, line := range rulesin {
+		key := keyexp.FindString(line)
 		parts := re.FindAllString(line, -1)
-		rules[parts[0]] = makeset(parts[1:])
+		fmt.Println(key, parts, len(parts))
+		rules[key] = makeset(parts)
 	}
 
 	// how many ways to get to a shiny gold bag?
 	count := 0
 	for bag, _ := range rules {
-		if cancontain(bag, "shiny gold bag", rules) {
-			count++
+	if cancontain(bag, "shiny gold bag", rules) {
+	count++
 		}
 	}
 	fmt.Printf("%d bags can contain a shiny gold bag", count)
 
 }
 
-// return a map of string to bool, containing all input strings as keys.
-func makeset(bags []string) map[string]bool {
-	result := make(map[string]bool)
+// return a map of string to bool, containing all input strings as keys and the number as values.
+func makeset(bags []string) map[string]int {
+	result := make(map[string]int)
 	for _, bag := range bags {
-		result[bag] = true
+		if bag == "no other bag" {
+			result[bag] = 0
+		} else {
+			number, _ := strconv.Atoi(string(bag[0]))	
+			key := bag[2:]
+			result[key] = number
+		}
 	}
 	return result
 
@@ -49,7 +59,7 @@ func makeset(bags []string) map[string]bool {
 
 // recursive search if bag x eventually can contain bag y under the given rules
 // return true if there is a way
-func cancontain(x string, y string, rules map[string]map[string]bool) bool {
+func cancontain(x string, y string, rules map[string]map[string]int) bool {
 	rulex := rules[x]
 	if len(rulex) == 1 && contains(rulex, "no other bag") {
 		return false
@@ -68,17 +78,17 @@ func cancontain(x string, y string, rules map[string]map[string]bool) bool {
 }
 
 // return true if the given map contains the given key
-func contains(rule map[string]bool, key string) bool {
+func contains(rule map[string]int, key string) bool {
 	_, exists := rule[key]
 	return exists
 }
 
 // display the rules
-func printrules(rules map[string]map[string]bool) {
+func printrules(rules map[string]map[string]int) {
 	for bag, containing := range rules {
 		fmt.Printf("bag %s contains: ", bag)
-		for key, _ := range containing {
-			fmt.Printf("%s ", key)
+		for description, number, _ := range containing {
+			fmt.Printf("%d %s ", number, description)
 		}
 		fmt.Println()
 	}
