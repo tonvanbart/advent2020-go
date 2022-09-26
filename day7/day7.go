@@ -26,18 +26,24 @@ func main() {
 	for _, line := range rulesin {
 		key := keyexp.FindString(line)
 		parts := re.FindAllString(line, -1)
-		fmt.Println(key, parts, len(parts))
+		// fmt.Println(key, parts, len(parts))
 		rules[key] = makeset(parts)
 	}
 
+	// printrules(rules)
+
 	// how many ways to get to a shiny gold bag?
 	count := 0
-	for bag, _ := range rules {
-	if cancontain(bag, "shiny gold bag", rules) {
-	count++
+	for bag := range rules {
+		if cancontain(bag, "shiny gold bag", rules) {
+			count++
 		}
 	}
-	fmt.Printf("%d bags can contain a shiny gold bag", count)
+	fmt.Printf("%d bags can contain a shiny gold bag\n", count)
+
+	// how many bags inside a shiny gold bag?
+	bagcontents := countContents("shiny gold bag", rules, 0)
+	fmt.Printf("In total there are %d bags inside a shiny gold bag\n", bagcontents)
 
 }
 
@@ -48,7 +54,7 @@ func makeset(bags []string) map[string]int {
 		if bag == "no other bag" {
 			result[bag] = 0
 		} else {
-			number, _ := strconv.Atoi(string(bag[0]))	
+			number, _ := strconv.Atoi(string(bag[0]))
 			key := bag[2:]
 			result[key] = number
 		}
@@ -68,13 +74,27 @@ func cancontain(x string, y string, rules map[string]map[string]int) bool {
 		return true
 	}
 	// loop over the bags that x contains and recurse
-	for bag, _ := range rulex {
+	for bag := range rulex {
 		if cancontain(bag, y, rules) {
 			return true
 		}
 	}
 	// not found anywhere
 	return false
+}
+
+// recursive count of number of bags contained in "bag"
+func countContents(bag string, rules map[string]map[string]int, acc int) int {
+	// log.Printf("countContents(%s, rules, %d)\n", bag, acc)
+	bagrule := rules[bag]
+	if len(bagrule) == 1 && contains(bagrule, "no other bag") {
+		return acc
+	}
+	for inner, count := range bagrule {
+		within := countContents(inner, rules, 0)
+		acc = acc + count + (count * within)
+	}
+	return acc
 }
 
 // return true if the given map contains the given key
@@ -87,7 +107,7 @@ func contains(rule map[string]int, key string) bool {
 func printrules(rules map[string]map[string]int) {
 	for bag, containing := range rules {
 		fmt.Printf("bag %s contains: ", bag)
-		for description, number, _ := range containing {
+		for description, number := range containing {
 			fmt.Printf("%d %s ", number, description)
 		}
 		fmt.Println()
