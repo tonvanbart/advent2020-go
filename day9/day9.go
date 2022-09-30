@@ -30,6 +30,20 @@ func main() {
 			break
 		}
 	}
+
+	// part 2
+	for lower := 0; lower < len(nums); lower++ {
+		for upper := lower + 1; upper <= len(nums); upper++ {
+			sum, min, max := addall(nums[lower:upper])
+			if sum == 22406676 {
+				fmt.Println(nums[lower:upper])
+				fmt.Printf("%d + %d = %d\n", min, max, min+max)
+			}
+			if sum > 22406676 {
+				break
+			}
+		}
+	}
 }
 
 // return true if nr is a sum of any two numbers in nums
@@ -42,4 +56,20 @@ func isSum(nr int, nums []int) bool {
 		}
 	}
 	return false
+}
+
+func addall(nums []int) (int, int, int) {
+	sum := 0
+	min := nums[0]
+	max := nums[0]
+	for _, nr := range nums {
+		sum += nr
+		if nr < min {
+			min = nr
+		}
+		if nr > max {
+			max = nr
+		}
+	}
+	return sum, min, max
 }
